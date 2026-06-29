@@ -203,7 +203,42 @@ r1.font.size = Pt(10)
 r2 = p.add_run('艺术设计 · 大专')
 r2.font.size = Pt(10)
 
-# ===== PORTFOLIO LINK =====
+# ===== PORTFOLIO: Screenshots + Link =====
+add_section_title(doc, 'AI 工作流项目截图')
+
+# Add three screenshots side by side
+from docx.shared import Inches
+import os
+
+img_dir = os.path.dirname(os.path.abspath(__file__))
+
+images = [
+    (img_dir + '/screenshot_p1.png', 'SKU缺货率智能监控'),
+    (img_dir + '/screenshot_p2.png', '日报/周报AI自动生成'),
+    (img_dir + '/screenshot_p3.png', '商家库存编辑审批自动化'),
+]
+
+for img_path, caption in images:
+    try:
+        doc.add_picture(img_path, width=Inches(5.5))
+        last_paragraph = doc.paragraphs[-1]
+        last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # Caption
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(6)
+        r = p.add_run(caption)
+        r.font.size = Pt(9)
+        r.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
+    except Exception as e:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run('[图片: ' + caption + ']')
+        r.font.size = Pt(9)
+        r.font.color.rgb = RGBColor(0x99, 0x99, 0x99)
+
+# Portfolio link
+doc.add_paragraph()
 doc.add_paragraph()
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
