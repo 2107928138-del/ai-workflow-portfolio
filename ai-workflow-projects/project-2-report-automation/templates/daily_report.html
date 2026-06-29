@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>速卖通供应链日报 - {{ data.report_date }}</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; max-width: 700px; margin: 0 auto; padding: 20px; background: #f5f6fa; }
+  .header { background: linear-gradient(135deg, #1a3a5c, #2c6faa); color: white; padding: 24px; border-radius: 8px 8px 0 0; }
+  .header h1 { margin: 0; font-size: 22px; }
+  .header .meta { font-size: 12px; opacity: 0.8; margin-top: 6px; }
+  .section { background: white; padding: 16px 20px; border-bottom: 1px solid #eee; }
+  .section:last-child { border-radius: 0 0 8px 8px; }
+  .section-title { font-size: 15px; font-weight: 700; color: #1a3a5c; border-left: 3px solid #2c6faa; padding-left: 8px; margin-bottom: 12px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .kpi-card { background: #f8f9fb; border-radius: 6px; padding: 12px; text-align: center; }
+  .kpi-card .value { font-size: 22px; font-weight: 700; color: #1a3a5c; }
+  .kpi-card .label { font-size: 11px; color: #888; margin-top: 2px; }
+  .kpi-card .change { font-size: 11px; margin-top: 2px; }
+  .change-up { color: #e74c3c; }
+  .change-down { color: #27ae60; }
+  .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .table th { background: #f0f2f5; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+  .table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+  .insight-box { background: #fef9e7; border-left: 3px solid #f39c12; padding: 10px 14px; border-radius: 4px; margin: 8px 0; font-size: 12.5px; }
+  .insight-box strong { color: #e67e22; }
+  .tag { display: inline-block; background: #e8f0fe; color: #1a56db; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-right: 4px; }
+  .footer { text-align: center; font-size: 11px; color: #aaa; padding: 16px; }
+  hr { border: none; border-top: 1px solid #eee; margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 速卖通供应链运营日报</h1>
+  <div class="meta">{{ data.period_label }} | 自动生成于 {{ generated_at }}</div>
+</div>
+
+<!-- 核心指标 -->
+<div class="section">
+  <div class="section-title">📈 核心指标概览</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="value">¥{{ "{:,.0f}".format(data.total_gmv) }}</div>
+      <div class="label">总 GMV</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ "{:,}".format(data.total_orders) }}</div>
+      <div class="label">总订单数</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ "%.1f"|format(data.out_of_stock_rate) }}%</div>
+      <div class="label">缺货率</div>
+      <div class="change {{ 'change-down' if data.out_of_stock_rate_wow <= 0 else 'change-up' }}">
+        {{ '↓' if data.out_of_stock_rate_wow <= 0 else '↑' }}{{ "%.1f"|format(data.out_of_stock_rate_wow|abs) }}pp
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ "%.1f"|format(data.on_time_delivery_rate) }}%</div>
+      <div class="label">准时发货率</div>
+    </div>
+  </div>
+</div>
+
+<!-- AI 分析洞察 -->
+<div class="section">
+  <div class="section-title">🤖 AI 分析洞察</div>
+  <div class="insight-box">
+    <strong>📌 核心发现：</strong>{{ insights.headline }}
+  </div>
+  {% for finding in insights.key_findings %}
+  <div class="insight-box" style="border-left-color: #3498db; background: #eaf2fd;">
+    <strong>{{ finding.title }}</strong>
+    <p style="margin: 6px 0 0 0;">{{ finding.body }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- 异常商家 -->
+<div class="section">
+  <div class="section-title">⚠️ TOP 风险商家</div>
+  <table class="table">
+    <tr><th>商家名称</th><th>风险SKU数</th><th>主要问题</th></tr>
+    {% for m in data.top_risk_merchants %}
+    <tr>
+      <td>{{ m.name }}</td>
+      <td><span class="tag">{{ m.risk_skus }}</span></td>
+      <td>{{ m.main_issue }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<!-- 改善进展 -->
+<div class="section">
+  <div class="section-title">✅ 改善进展</div>
+  <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="kpi-card">
+      <div class="value">{{ data.improved_sku_count }}</div>
+      <div class="label">改善 SKU 数</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ data.improved_merchant_count }}</div>
+      <div class="label">改善商家数</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ data.abnormal_merchant_count }}</div>
+      <div class="label">剩余异常商家</div>
+    </div>
+  </div>
+</div>
+
+<!-- 明日关注 -->
+<div class="section">
+  <div class="section-title">🎯 明日重点关注</div>
+  <ul style="font-size: 12.5px; padding-left: 18px;">
+    {% for item in insights.next_focus %}
+    <li style="margin-bottom: 4px;">{{ item }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="footer">
+  本报告由 AI 辅助生成系统自动产出 | {{ generated_at }}<br>
+  如有疑问请联系供应链运营团队
+</div>
+
+</body>
+</html>

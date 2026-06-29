@@ -1,0 +1,60 @@
+{
+  "dashboard": {
+    "name": "速卖通SKU缺货率监控看板",
+    "refresh_interval": "30min",
+    "data_source": "sku_monitor.sqlite + anomaly_result.json"
+  },
+  "charts": [
+    {
+      "id": "risk_summary",
+      "type": "summary_cards",
+      "title": "缺货风险概览",
+      "metrics": ["高风险SKU数", "中风险SKU数", "低风险SKU数", "预估GMV损失"],
+      "position": {"x": 0, "y": 0, "w": 12, "h": 2}
+    },
+    {
+      "id": "trend_line",
+      "type": "line_chart",
+      "title": "缺货率趋势 (近30天)",
+      "x_axis": "日期",
+      "y_axis": "缺货率(%)",
+      "series": [
+        {"name": "高风险缺货率", "query": "trend_high_risk"},
+        {"name": "整体缺货率", "query": "trend_overall"}
+      ],
+      "position": {"x": 0, "y": 2, "w": 8, "h": 4}
+    },
+    {
+      "id": "merchant_ranking",
+      "type": "bar_chart",
+      "title": "TOP 高风险商家排行",
+      "x_axis": "商家名称",
+      "y_axis": "高风险SKU数",
+      "query": "merchant_ranking",
+      "position": {"x": 8, "y": 2, "w": 4, "h": 4}
+    },
+    {
+      "id": "category_heatmap",
+      "type": "heatmap",
+      "title": "品类缺货热力图",
+      "x_axis": "二级品类",
+      "y_axis": "一级品类",
+      "value": "缺货率(%)",
+      "query": "category_heatmap",
+      "position": {"x": 0, "y": 6, "w": 6, "h": 4}
+    },
+    {
+      "id": "alert_log",
+      "type": "table",
+      "title": "预警推送记录",
+      "columns": ["时间", "风险等级", "SKU数", "推送渠道", "状态"],
+      "query": "alert_log",
+      "position": {"x": 6, "y": 6, "w": 6, "h": 4}
+    }
+  ],
+  "filters": [
+    {"name": "一级品类", "type": "dropdown", "field": "category_l1"},
+    {"name": "风险等级", "type": "checkbox", "field": "risk_level"},
+    {"name": "日期范围", "type": "date_range", "field": "snapshot_time"}
+  ]
+}

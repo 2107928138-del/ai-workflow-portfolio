@@ -1,0 +1,140 @@
+{
+  "form": {
+    "id": "form_inventory_edit_approval",
+    "name": "商家活动库存编辑申请表",
+    "description": "大促期间商家修改活动报名库存的统一审批入口",
+    "version": "2.1",
+    "created_by": "吴天琦 (Codex 辅助生成 Schema)"
+  },
+  "fields": [
+    {
+      "id": "merchant_id",
+      "type": "text",
+      "label": "商家ID",
+      "required": true,
+      "placeholder": "系统自动填充",
+      "readonly": true,
+      "default_from": "current_user.merchant_id"
+    },
+    {
+      "id": "merchant_name",
+      "type": "text",
+      "label": "商家名称",
+      "required": true,
+      "readonly": true,
+      "default_from": "current_user.merchant_name"
+    },
+    {
+      "id": "activity_name",
+      "type": "dropdown",
+      "label": "关联活动",
+      "required": true,
+      "options_from_api": "/api/activities/current",
+      "validation": {
+        "message": "请选择有效的进行中活动"
+      }
+    },
+    {
+      "id": "sku_list",
+      "type": "subform",
+      "label": "需修改的 SKU",
+      "min_rows": 1,
+      "max_rows": 20,
+      "columns": [
+        {
+          "id": "sku_id",
+          "type": "autocomplete",
+          "label": "SKU ID",
+          "required": true,
+          "search_api": "/api/sku/search"
+        },
+        {
+          "id": "original_stock",
+          "type": "number",
+          "label": "原活动库存",
+          "readonly": true,
+          "default_from_api": "/api/activity/stock"
+        },
+        {
+          "id": "requested_stock",
+          "type": "number",
+          "label": "申请库存数",
+          "required": true,
+          "validation": {
+            "min": 0,
+            "message": "库存数不能为负数",
+            "custom_rule": "requested_stock <= getActivityMaxStock(sku_id)",
+            "custom_message": "申请库存不得超过活动上限"
+          }
+        },
+        {
+          "id": "change_amount",
+          "type": "number",
+          "label": "变更量",
+          "computed": "requested_stock - original_stock",
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "id": "change_reason",
+      "type": "textarea",
+      "label": "变更原因",
+      "required": true,
+      "placeholder": "请详细说明需要修改库存的原因...",
+      "max_length": 500,
+      "validation": {
+        "min_length": 10,
+        "message": "变更原因至少10个字"
+      }
+    },
+    {
+      "id": "attachment",
+      "type": "attachment",
+      "label": "佐证材料",
+      "required": false,
+      "max_count": 3,
+      "accept": [
+        ".pdf",
+        ".jpg",
+        ".png",
+        ".xlsx"
+      ],
+      "description": "可上传销售数据截图、库存系统截图等证明材料"
+    },
+    {
+      "id": "total_change",
+      "type": "number",
+      "label": "合计变更量 (审批路由用)",
+      "computed": "SUM(sku_list[*].change_amount)",
+      "hidden": true
+    }
+  ],
+  "ui_config": {
+    "layout": "vertical",
+    "sections": [
+      {
+        "title": "基本信息",
+        "fields": [
+          "merchant_name",
+          "activity_name"
+        ]
+      },
+      {
+        "title": "SKU 库存修改",
+        "fields": [
+          "sku_list"
+        ]
+      },
+      {
+        "title": "变更说明",
+        "fields": [
+          "change_reason",
+          "attachment"
+        ]
+      }
+    ],
+    "submit_text": "提交审批",
+    "confirm_message": "提交后将进入审批流程，审批结果将通过钉钉通知您。确认提交？"
+  }
+}

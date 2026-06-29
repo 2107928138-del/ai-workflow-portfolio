@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>速卖通供应链周报 - {{ data.week_label }}</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #333; max-width: 720px; margin: 0 auto; padding: 20px; background: #f5f6fa; }
+  .header { background: linear-gradient(135deg, #1a3a5c, #2c6faa); color: white; padding: 24px; border-radius: 8px 8px 0 0; }
+  .header h1 { margin: 0; font-size: 22px; }
+  .header .meta { font-size: 12px; opacity: 0.8; margin-top: 6px; }
+  .section { background: white; padding: 16px 20px; border-bottom: 1px solid #eee; }
+  .section:last-child { border-radius: 0 0 8px 8px; }
+  .section-title { font-size: 15px; font-weight: 700; color: #1a3a5c; border-left: 3px solid #2c6faa; padding-left: 8px; margin-bottom: 12px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+  .kpi-card { background: #f8f9fb; border-radius: 6px; padding: 12px; text-align: center; }
+  .kpi-card .value { font-size: 22px; font-weight: 700; color: #1a3a5c; }
+  .kpi-card .label { font-size: 11px; color: #888; }
+  .change-up { color: #e74c3c; }
+  .change-down { color: #27ae60; }
+  .summary-box { background: #f0f7ff; border-left: 3px solid #2c6faa; padding: 12px 14px; border-radius: 4px; font-size: 12.5px; margin: 8px 0; }
+  .table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .table th { background: #f0f2f5; padding: 8px 10px; text-align: left; font-weight: 600; }
+  .table td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+  .rec-box { background: #eaf7ea; border-left: 3px solid #27ae60; padding: 10px 14px; border-radius: 4px; margin: 6px 0; font-size: 12.5px; }
+  .footer { text-align: center; font-size: 11px; color: #aaa; padding: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 速卖通供应链运营周报</h1>
+  <div class="meta">{{ data.week_label }} | 自动生成于 {{ generated_at }}</div>
+</div>
+
+<!-- 核心指标 -->
+<div class="section">
+  <div class="section-title">📈 本周核心指标</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="value">¥{{ "{:,.0f}".format(data.total_gmv) }}</div>
+      <div class="label">周度 GMV</div>
+      <div class="change change-up">↑ {{ "%.1f"|format(data.total_gmv_wow) }}% 环比</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ "{:,}".format(data.total_orders) }}</div>
+      <div class="label">周度订单</div>
+      <div class="change change-up">↑ {{ "%.1f"|format(data.total_orders_wow) }}% 环比</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ "%.1f"|format(data.out_of_stock_rate_avg) }}%</div>
+      <div class="label">周均缺货率</div>
+      <div class="change change-down">↓ {{ "%.1f"|format(data.out_of_stock_rate_wow|abs) }}pp 环比</div>
+    </div>
+    <div class="kpi-card">
+      <div class="value">{{ "%.1f"|format(data.on_time_delivery_rate) }}%</div>
+      <div class="label">准时发货率</div>
+    </div>
+  </div>
+</div>
+
+<!-- AI 周度总结 -->
+<div class="section">
+  <div class="section-title">🤖 AI 周度总结</div>
+  <div class="summary-box">
+    <strong>📌 {{ insights.headline }}</strong>
+  </div>
+  <div class="summary-box" style="background: #fafafa; border-left-color: #bbb;">
+    <p style="margin: 0;">{{ insights.week_summary }}</p>
+  </div>
+</div>
+
+<!-- 品类分析 -->
+<div class="section">
+  <div class="section-title">📂 品类缺货分析</div>
+  <table class="table">
+    <tr><th>品类</th><th>缺货状态</th></tr>
+    {% for cat, status in insights.category_analysis.items() %}
+    <tr><td><strong>{{ cat }}</strong></td><td>{{ status }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<!-- 改善/问题 -->
+<div class="section">
+  <div class="section-title">✅ 商家治理成果</div>
+  <p style="font-size:12px; color:#666;">本周沟通 {{ data.total_contacted_merchants }} 家，已改善 {{ data.improved_merchants }} 家，改善率 {{ "%.1f"|format(data.improvement_rate) }}%</p>
+  <table class="table">
+    <tr><th>商家名称</th><th>改善前</th><th>改善后</th><th>措施</th></tr>
+    {% for m in data.best_improved %}
+    <tr>
+      <td>{{ m.name }}</td>
+      <td>{{ m.before }}个</td>
+      <td>{{ m.after }}个</td>
+      <td>{{ m.action }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<!-- 建议 -->
+<div class="section">
+  <div class="section-title">💡 下周行动建议</div>
+  {% for rec in insights.recommendations %}
+  <div class="rec-box">📌 {{ rec }}</div>
+  {% endfor %}
+</div>
+
+<div class="footer">
+  本报告由 AI 辅助生成系统自动产出 | {{ generated_at }}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKU 缺货率智能监控 - 速卖通供应链运营</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#0f1923;--card:#17212b;--border:#253040;--text:#e0e6ed;--muted:#7b8ca0;--blue:#38bdf8;--red:#f87171;--yellow:#fbbf24;--green:#34d399;--purple:#a78bfa}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{padding:20px 24px;max-width:1400px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:22px;font-weight:700}
+.header .badge{font-size:11px;background:rgba(56,189,248,.15);color:var(--blue);padding:4px 12px;border-radius:12px}
+.status-bar{display:flex;gap:24px;font-size:12px;color:var(--muted);margin-bottom:16px;flex-wrap:wrap}
+.status-bar .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.status-bar .dot.green{background:var(--green)}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{cursor:pointer;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.tab:hover,.tab.active{background:#1d2d40;color:var(--text);border-color:#3b5068}
+.tab.active{border-color:var(--blue);color:var(--blue)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.card-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.card-value{font-size:26px;font-weight:700;margin-bottom:2px}
+.card-change{font-size:11px}
+.card-change.up{color:var(--red)}.card-change.down{color:var(--green)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr}}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.chart-box h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+.chart-box .chart{width:100%;height:280px}
+.table-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;overflow-x:auto}
+.table-box h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-weight:600;border-bottom:2px solid var(--border);font-size:11px}
+td{padding:8px 12px;border-bottom:1px solid rgba(37,48,64,.5)}
+.risk-high{color:var(--red);font-weight:600}
+.risk-mid{color:var(--yellow);font-weight:600}
+.risk-low{color:var(--green)}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.tag-red{background:rgba(248,113,113,.15);color:var(--red)}
+.tag-yellow{background:rgba(251,191,36,.15);color:var(--yellow)}
+.tag-green{background:rgba(52,211,153,.15);color:var(--green)}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0}
+.ai-note{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--yellow)}
+.flow-viz{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;font-size:12px}
+.flow-step{background:rgba(56,189,248,.1);color:var(--blue);padding:8px 14px;border-radius:8px;font-weight:500}
+.flow-arrow{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>🔍 SKU 缺货率智能监控与自动预警</h1>
+      <div class="status-bar" style="margin-top:8px">
+        <span><span class="dot green"></span> 系统运行中</span>
+        <span>上次刷新：2025-12-15 14:30:00</span>
+        <span>监控 SKU：5,238 个</span>
+        <span>数据延迟：&lt; 30分钟</span>
+      </div>
+    </div>
+    <div class="badge">速卖通供应链运营 · 吴天琦</div>
+  </div>
+
+  <!-- Tab切换 -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('monitor')">📊 数据总览</div>
+    <div class="tab" onclick="switchTab('detail')">📋 SKU 明细</div>
+    <div class="tab" onclick="switchTab('alert')">🔔 预警记录</div>
+    <div class="tab" onclick="switchTab('arch')">⚙️ 工作流架构</div>
+  </div>
+
+  <!-- ============ Tab 1: 数据总览 ============ -->
+  <div id="tab-monitor" class="tab-content active">
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">🔴 高风险 SKU</div>
+        <div class="card-value" style="color:var(--red)">8</div>
+        <div class="card-change down">↓ 2 个 环比</div>
+      </div>
+      <div class="card">
+        <div class="card-label">🟡 中风险 SKU</div>
+        <div class="card-value" style="color:var(--yellow)">12</div>
+        <div class="card-change down">↓ 3 个 环比</div>
+      </div>
+      <div class="card">
+        <div class="card-label">🟢 低风险 SKU</div>
+        <div class="card-value" style="color:var(--green)">23</div>
+        <div class="card-change down">↓ 5 个 环比</div>
+      </div>
+      <div class="card">
+        <div class="card-label">💰 预估 GMV 损失</div>
+        <div class="card-value">¥28,450</div>
+        <div class="card-change down">↓ ¥6,200 环比</div>
+      </div>
+      <div class="card">
+        <div class="card-label">📊 整体缺货率</div>
+        <div class="card-value">3.2%</div>
+        <div class="card-change down">↓ 0.5pp 环比</div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box"><h3>缺货率趋势（近30天）</h3><div class="chart" id="c1"></div></div>
+      <div class="chart-box"><h3>TOP 高风险商家排行</h3><div class="chart" id="c2"></div></div>
+      <div class="chart-box" style="grid-column:1/-1"><h3>品类缺货热力图</h3><div class="chart" id="c3" style="height:320px"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ Tab 2: SKU 明细 ============ -->
+  <div id="tab-detail" class="tab-content">
+    <div class="table-box">
+      <h3>所有风险 SKU 明细清单</h3>
+      <table id="skuTable">
+        <thead><tr><th>商家</th><th>SKU 名称</th><th>品类</th><th>当前库存</th><th>安全库存</th><th>日均销量</th><th>可售天数</th><th>风险等级</th><th>预估损失</th></tr></thead>
+        <tbody id="skuBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 3: 预警记录 ============ -->
+  <div id="tab-alert" class="tab-content">
+    <div class="table-box">
+      <h3>预警推送记录（今日）</h3>
+      <table>
+        <thead><tr><th>时间</th><th>风险等级</th><th>异常 SKU 数</th><th>推送渠道</th><th>状态</th></tr></thead>
+        <tbody id="alertBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 4: 工作流架构 ============ -->
+  <div id="tab-arch" class="tab-content">
+    <div class="flow-viz">
+      <span class="flow-step">⏰ Cron定时触发</span><span class="flow-arrow">→</span>
+      <span class="flow-step">📡 data_fetch.py<br><small>ODPS数据拉取</small></span><span class="flow-arrow">→</span>
+      <span class="flow-step">⚡ anomaly_detect.py<br><small>异常检测+分级</small></span><span class="flow-arrow">→</span>
+      <span class="flow-step">🔔 alert_push.py<br><small>企微/钉钉推送</small></span><span class="flow-arrow">→</span>
+      <span class="flow-step">📊 FBI看板刷新</span>
+    </div>
+    <div class="ai-note">
+      <strong>🤖 AI 参与环节：</strong>SQL 查询生成 | Python 脚本编写 | 预警文案生成 | Bug 调试 —— 全部由 Codex 辅助完成，开发效率提升 50%+
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box" style="grid-column:1/-1">
+        <h3>单次检测流程耗时分析</h3>
+        <div class="chart" id="c4" style="height:300px"></div>
+      </div>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card"><div class="card-label">⏱ 数据拉取</div><div class="card-value">8.2s</div></div>
+      <div class="card"><div class="card-label">⚡ 异常检测</div><div class="card-value">3.5s</div></div>
+      <div class="card"><div class="card-label">🔔 预警推送</div><div class="card-value">1.8s</div></div>
+      <div class="card"><div class="card-label">📊 总耗时</div><div class="card-value">13.5s</div></div>
+    </div>
+  </div>
+
+  <div class="footer">SKU 缺货率智能监控系统 · 速卖通供应链运营 · 吴天琦 · 演示数据仅供展示</div>
+</div>
+
+<script>
+// Tab 切换
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.tab[onclick*="'+name+'"]').classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='monitor'){initC1();initC2();initC3()}
+  if(name==='arch') initC4();
+}
+
+// 模拟 SKU 数据
+const skuData = [
+  {m:'绅士男装馆',name:'男士POLO衫-条纹',cat:'男装/POLO衫',stock:8,safe:100,sales:6.2,days:1.3,risk:'🔴 高风险',loss:5580},
+  {m:'潮流服饰旗舰店',name:'夏季连衣裙-碎花款',cat:'女装/连衣裙',stock:12,safe:50,sales:5.0,days:2.4,risk:'🔴 高风险',loss:3240},
+  {m:'萌宠乐园',name:'猫砂 10kg',cat:'宠物用品/猫砂',stock:30,safe:120,sales:3.6,days:8.3,risk:'🔴 高风险',loss:1620},
+  {m:'数码先锋店',name:'移动电源 20000mAh',cat:'3C数码/充电宝',stock:45,safe:150,sales:2.6,days:17.3,risk:'🟡 中风险',loss:0},
+  {m:'运动达人家',name:'瑜伽垫 6mm',cat:'运动户外/瑜伽',stock:22,safe:60,sales:2.0,days:11.0,risk:'🟡 中风险',loss:0},
+  {m:'潮流服饰旗舰店',name:'夏季连衣裙-纯色款',cat:'女装/连衣裙',stock:65,safe:80,sales:4.0,days:16.3,risk:'🟡 中风险',loss:0},
+  {m:'萌宠乐园',name:'猫粮 5kg',cat:'宠物用品/猫粮',stock:55,safe:80,sales:2.9,days:19.0,risk:'🟢 低风险',loss:0},
+  {m:'数码先锋店',name:'蓝牙耳机 Pro',cat:'3C数码/耳机',stock:180,safe:200,sales:3.1,days:58.1,risk:'✅ 正常',loss:0},
+];
+function renderSkuTable(){
+  const tbody=document.getElementById('skuBody');
+  tbody.innerHTML=skuData.map(s=>`
+    <tr>
+      <td>${s.m}</td><td>${s.name}</td><td>${s.cat}</td>
+      <td>${s.stock}</td><td>${s.safe}</td><td>${s.sales}</td><td>${s.days}</td>
+      <td class="${s.risk.includes('高')?'risk-high':s.risk.includes('中')?'risk-mid':'risk-low'}">${s.risk}</td>
+      <td>${s.loss?'¥'+s.loss.toLocaleString():'-'}</td>
+    </tr>`).join('');
+}
+renderSkuTable();
+
+// 预警记录
+document.getElementById('alertBody').innerHTML=[
+  ['14:30','🔴 高风险',3,'企业微信 + 钉钉','✅ 已送达'],
+  ['14:00','🔴 高风险',5,'企业微信 + 钉钉','✅ 已送达'],
+  ['13:30','🟡 中风险',4,'企业微信','✅ 已送达'],
+  ['13:00','🟡 中风险',6,'企业微信','✅ 已送达'],
+  ['12:30','🔴 高风险',2,'企业微信 + 钉钉','✅ 已送达'],
+  ['12:00','🟢 低风险',8,'仅记录','📋 已归档'],
+].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
+
+// 图表
+function eChart(id){return echarts.init(document.getElementById(id))}
+
+function initC1(){
+  const days=Array.from({length:30},(_,i)=>'12/'+(i+1));
+  const trend=days.map((_,i)=>4.8-i*0.06+Math.sin(i/5)*0.3);
+  eChart('c1').setOption({
+    tooltip:{trigger:'axis'},grid:{left:40,right:20,top:10,bottom:30},
+    xAxis:{type:'category',data:days,axisLabel:{color:'#7b8ca0',fontSize:10}},
+    yAxis:{type:'value',name:'%',axisLabel:{color:'#7b8ca0'}},
+    series:[{data:trend,type:'line',smooth:true,lineStyle:{color:'#38bdf8'},areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(56,189,248,.3)'},{offset:1,color:'rgba(56,189,248,0)'}])},itemStyle:{color:'#38bdf8'}}]
+  });
+}
+function initC2(){
+  const merchants=['绅士男装馆','潮流服饰','萌宠乐园','数码先锋','运动达人','其他'];
+  eChart('c2').setOption({
+    tooltip:{trigger:'axis'},grid:{left:80,right:20,top:10,bottom:30},
+    xAxis:{type:'value',axisLabel:{color:'#7b8ca0'}},
+    yAxis:{type:'category',data:merchants,axisLabel:{color:'#7b8ca0',fontSize:10}},
+    series:[{data:[3,2,2,1,1,3],type:'bar',itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#f87171'},{offset:1,color:'#fbbf24'}])},barWidth:16,label:{show:true,position:'right',color:'#e0e6ed',fontSize:11}}]
+  });
+}
+function initC3(){
+  const l1=['女装','男装','3C数码','运动户外','宠物用品'];
+  const l2=[['连衣裙','T恤','外套'],['POLO衫','衬衫','西裤'],['耳机','充电宝','手机壳'],['瑜伽','跑步','骑行'],['猫砂','猫粮','狗粮']];
+  const data=[];l1.forEach((c,i)=>l2[i].forEach((s,j)=>data.push([j,i,(Math.random()*8+1).toFixed(1)])));
+  eChart('c3').setOption({
+    tooltip:{formatter:p=>p.data[2]+'%'},grid:{left:80,right:40,top:10,bottom:30},
+    xAxis:{type:'category',data:l2[0],axisLabel:{color:'#7b8ca0',fontSize:10}},
+    yAxis:{type:'category',data:l1,axisLabel:{color:'#7b8ca0',fontSize:10}},
+    visualMap:{min:0,max:8,calculable:true,orient:'horizontal',left:'center',bottom:0,inRange:{color:['#1e3a5f','#2c6faa','#fbbf24','#f87171']},textStyle:{color:'#7b8ca0'}},
+    series:[{type:'heatmap',data:data,label:{show:true,color:'#e0e6ed',fontSize:9},emphasis:{itemStyle:{shadowBlur:10,shadowColor:'rgba(0,0,0,.5)'}}}]
+  });
+}
+function initC4(){
+  eChart('c4').setOption({
+    tooltip:{trigger:'axis'},grid:{left:50,right:20,top:10,bottom:30},
+    xAxis:{type:'category',data:['数据拉取','数据清洗','指标计算','异常检测','消息生成','推送执行'],axisLabel:{color:'#7b8ca0'}},
+    yAxis:{type:'value',name:'秒',axisLabel:{color:'#7b8ca0'}},
+    series:[{data:[8.2,1.5,0.8,1.2,0.3,1.5],type:'bar',barWidth:30,itemStyle:{borderRadius:[4,4,0,0],color:p=>['#38bdf8','#818cf8','#a78bfa','#fbbf24','#34d399','#f87171'][p.dataIndex]},label:{show:true,position:'top',color:'#e0e6ed',fontSize:10,formatter:'{c}s'}}]
+  });
+}
+
+// Init
+initC1();initC2();initC3();
+window.addEventListener('resize',()=>{
+  ['c1','c2','c3','c4'].forEach(id=>{const d=document.getElementById(id);if(d){const i=echarts.getInstanceByDom(d);i&&i.resize()}});
+});
+</script>
+</body>
+</html>

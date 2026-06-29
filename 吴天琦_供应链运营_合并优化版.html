@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>吴天琦 - 供应链运营</title>
+<style>
+  :root {
+    --primary: #1a3a5c;
+    --accent: #2c6faa;
+    --bg: #f8f9fb;
+    --text: #2d3436;
+    --text-light: #636e72;
+    --border: #e0e5ec;
+    --tag-bg: #e8f0fe;
+    --tag-text: #1a56db;
+    --highlight: #fef3c7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #e8edf3;
+    color: var(--text);
+    line-height: 1.7;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  .page {
+    width: 794px;
+    background: white;
+    padding: 44px 52px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+  }
+
+  .header {
+    text-align: center;
+    padding-bottom: 22px;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 18px;
+  }
+  .header h1 { font-size: 27px; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
+  .header .contact { font-size: 12.5px; color: var(--text-light); margin-top: 6px; }
+  .header .contact span { margin: 0 8px; }
+
+  .section { margin-bottom: 18px; }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .skill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .skill-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+  }
+  .skill-item .skill-name { font-size: 12.5px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+  .skill-item .skill-desc { font-size: 11px; color: var(--text-light); }
+
+  .exp-item { margin-bottom: 12px; }
+  .exp-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; flex-wrap: wrap; }
+  .exp-header .company { font-size: 13.5px; font-weight: 700; color: var(--primary); }
+  .exp-header .job-title { font-size: 12.5px; color: var(--accent); font-weight: 600; }
+  .exp-header .date { font-size: 11.5px; color: var(--text-light); white-space: nowrap; }
+  .exp-bullets { padding-left: 17px; }
+  .exp-bullets li { font-size: 12px; color: var(--text); margin-bottom: 2px; }
+  .exp-bullets li::marker { color: var(--accent); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+  .tag { font-size: 10px; background: var(--tag-bg); color: var(--tag-text); padding: 1px 7px; border-radius: 9px; font-weight: 500; }
+
+  /* Project detail box */
+  .proj-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: #fafbfc;
+  }
+  .proj-box-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .proj-box-header .proj-name { font-size: 13.5px; font-weight: 700; color: var(--primary); }
+  .proj-box-header .proj-date { font-size: 11.5px; color: var(--text-light); }
+
+  .proj-subtitle { font-size: 11.5px; font-weight: 600; color: var(--accent); margin: 8px 0 3px; }
+  .proj-bullets { padding-left: 16px; }
+  .proj-bullets li { font-size: 11.5px; color: var(--text); margin-bottom: 1.5px; }
+  .proj-bullets li::marker { color: var(--accent); }
+
+  .proj-flow {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10.5px; color: var(--text-light);
+    background: white; border: 1px dashed var(--border);
+    border-radius: 4px; padding: 6px 10px; margin: 6px 0;
+    flex-wrap: wrap;
+  }
+  .proj-flow .step {
+    background: var(--tag-bg); color: var(--tag-text);
+    padding: 1px 6px; border-radius: 3px; font-weight: 500;
+  }
+  .proj-flow .arrow { color: var(--accent); font-weight: 700; }
+
+  .deliverable-list { padding-left: 16px; }
+  .deliverable-list li { font-size: 11px; color: var(--text); margin-bottom: 1px; }
+
+  .edu-item { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 3px; }
+  .edu-item .edu-school { font-weight: 600; color: var(--primary); }
+  .edu-item .edu-major { color: var(--text-light); }
+  .edu-item .edu-date { color: var(--text-light); font-size: 11.5px; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .page { box-shadow: none; width: 100%; padding: 32px 44px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>吴 天 琦</h1>
+    <div class="contact">
+      17717100070 <span>|</span> 17717100070@163.com <span>|</span> 微信：wk923406
+    </div>
+    <div class="contact">
+      求职意向：供应链运营 / 数据分析 <span>|</span> 工作年限：3年
+    </div>
+  </div>
+
+  <!-- Skills -->
+  <div class="section">
+    <div class="section-title">专业技能</div>
+    <div class="skill-grid">
+      <div class="skill-item">
+        <div class="skill-name">📊 供应链运营</div>
+        <div class="skill-desc">熟悉电商供应链售后链路，擅长通过数据分析定位缺货、履约等核心问题，联动商家与内部团队推动运营闭环。</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">🤖 AI 自动化工作流</div>
+        <div class="skill-desc">熟练使用 Codex / Cursor 等 AI 编程工具辅助开发与自动化脚本编写；掌握 Airflow 任务调度、Python 数据处理与 Jinja2 模板引擎，能独立搭建端到端数据自动化工作流。</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">📈 数据分析</div>
+        <div class="skill-desc">熟练 SQL 多表关联与窗口函数，精通 Excel 数据透视；能独立完成订单、库存、售后数据的取数、清洗与异常定位。</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">🔧 自动化工具</div>
+        <div class="skill-desc">使用宜搭搭建业务流程表单与审批流；掌握 PowerShell / Python 脚本编写，熟悉 Playwright 自动化报告导出与定时任务配置。</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">📊 数据可视化</div>
+        <div class="skill-desc">使用 FBI、Tableau、Power BI 搭建供应链监控看板，提升问题发现与风险预警效率；熟悉 ECharts 图表库与看板搭建。</div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-name">🤝 商家对接与沟通</div>
+        <div class="skill-desc">具备丰富的商家沟通经验，能有效协调多方诉求，推动售后规则优化与履约流程改善。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Experience -->
+  <div class="section">
+    <div class="section-title">工作经历</div>
+
+    <div class="exp-item">
+      <div class="exp-header">
+        <div>
+          <span class="company">阿里巴巴 · 速卖通</span>
+          <span class="job-title">供应链运营</span>
+        </div>
+        <span class="date">2025.10 - 至今</span>
+      </div>
+      <ul class="exp-bullets">
+        <li>以缺货率为核心指标，通过 SQL 与看板工具监控 SKU 维度数据，主动识别库存不足、发货延迟等异常商家，定位售后履约瓶颈。</li>
+        <li>运用 Codex 辅助搭建缺货率智能监控与自动预警工作流，数据清洗与报表效率提升 40%，问题发现效率提升 30%；同步搭建日报/周报 AI 自动生成系统，报告产出效率提升 50%+。联动商家端，针对数据表现异常的商家进行定向沟通，推动改善出货计划、库存备货与发货时效，有效降低平台整体缺货率。</li>
+        <li>参与售后体验优化，协同业务团队完善商家对接流程与异常处理机制，提升问题解决效率与商家配合度。</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">SQL</span><span class="tag">Codex</span><span class="tag">Python</span><span class="tag">FBI</span><span class="tag">Airflow</span><span class="tag">供应链运营</span>
+      </div>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-header">
+        <div>
+          <span class="company">北京润合美品牌管理有限公司</span>
+          <span class="job-title">数据分析师</span>
+        </div>
+        <span class="date">2023.06 - 2025.07</span>
+      </div>
+      <ul class="exp-bullets">
+        <li>通过 SQL 取数与 Python 清洗，每月处理 <strong>50GB+</strong> 业务数据，支撑库存预测与补货决策，数据准确率达 <strong>98%</strong>。</li>
+        <li>使用宜搭搭建库存管理流程表单与审批流，实现库存数据采集与流转自动化，减少人工录入错误。</li>
+        <li>运用 AI 工具辅助数据分析，加速数据探索与洞察生成，提升报告输出效率 <strong>25%</strong>。</li>
+        <li>完善销售与库存指标体系，每月输出 3+ 份分析报告，助力供应链优化与运营决策。</li>
+        <li>复盘大促活动库存表现，优化备货策略，提升库存周转率。</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">SQL</span><span class="tag">Python</span><span class="tag">宜搭</span><span class="tag">AI工具</span><span class="tag">库存分析</span>
+      </div>
+    </div>
+
+    <div class="exp-item">
+      <div class="exp-header">
+        <div>
+          <span class="company">北京远集金叶科技有限公司</span>
+          <span class="job-title">数据专员</span>
+        </div>
+        <span class="date">2022.08 - 2023.04</span>
+      </div>
+      <ul class="exp-bullets">
+        <li>负责数据采集、录入与备份，每周处理 10GB+ 原始数据，录入准确率 <strong>99%</strong>。</li>
+        <li>清洗并修正异常、缺失与重复数据，每月处理 30万+ 条记录，一致性达 98%。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Projects -->
+  <div class="section">
+    <div class="section-title">AI 工作流项目</div>
+
+        <!-- Project 1: 缺货率智能监控 -->
+    <div class="proj-box">
+      <div class="proj-box-header">
+        <span class="proj-name">🤖 SKU 缺货率智能监控与自动预警工作流</span>
+        <span class="proj-date">2025.10 - 至今</span>
+      </div>
+      <ul class="proj-bullets">
+        <li>针对 5,000+ 活跃 SKU，构建 <strong>SQL 定时取数 → Python 清洗 → 异常检测 → FBI 看板 → 企业微信/钉钉预警</strong> 全链路自动化闭环。</li>
+        <li>使用 <strong>Codex</strong> 辅助编写 SQL 多表关联查询、Python 数据清洗脚本与预警推送逻辑，开发效率提升 50%+，日均自动识别异常 SKU 200+。</li>
+        <li>缺货发现时效从<strong>人工 T+1 → 系统实时（&lt;30 分钟）</strong>，问题发现效率提升 30%。</li>
+        <li><strong>实体产出：</strong>10+ SQL 模板、3 个 Python 脚本（~800 行）、FBI 监控看板、分级预警推送记录。</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">SQL</span><span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">Codex</span><span class="tag">FBI</span><span class="tag">Crontab</span><span class="tag">企业微信API</span>
+      </div>
+    </div>
+    <!-- Project 2: 日报周报自动化 -->
+    <div class="proj-box">
+      <div class="proj-box-header">
+        <span class="proj-name">🤖 供应链日报/周报 AI 辅助生成与自动推送工作流</span>
+        <span class="proj-date">2025.10 - 至今</span>
+      </div>
+      <ul class="proj-bullets">
+        <li>搭建 <strong>自动取数 → 指标计算 → AI 分析生成 → Jinja2 模板渲染 → 邮件推送</strong> 全自动报告流水线。</li>
+        <li>使用 <strong>Codex</strong> 辅助编写 report_engine.py（~200 行）、Jinja2 HTML 模板、AI 分析 Prompt，将结构指标输入 Prompt 自动生成叙述性分析段落。</li>
+        <li>单次报告制作从 <strong>2~3 小时 → 10~15 分钟</strong>，效率提升 90%，实现 7×24 全自动运行。</li>
+        <li><strong>实体产出：</strong>Python 报告引擎、日报/周报双模板、可用浏览器打开的 HTML 报告样例。</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">Python</span><span class="tag">Jinja2</span><span class="tag">Codex</span><span class="tag">SMTP</span><span class="tag">Crontab</span><span class="tag">HTML/CSS</span>
+      </div>
+    </div>
+    <!-- Project 3: 宜搭审批流 -->
+    <div class="proj-box">
+      <div class="proj-box-header">
+        <span class="proj-name">🤖 商家活动库存编辑审批自动化工作流</span>
+        <span class="proj-date">2025</span>
+      </div>
+      <ul class="proj-bullets">
+        <li>基于<strong>宜搭低代码平台</strong>搭建标准化审批流，实现<strong>商家提交 → 自动校验 → 规则引擎分级 → L1/L2/L3 审批 → API 回写 → 钉钉/企微通知</strong>全链路。</li>
+        <li>使用 <strong>Codex</strong> 辅助生成宜搭表单 JSON Schema、分级路由 JS 逻辑、API 回写脚本（含 HMAC 签名与重试机制）。</li>
+        <li>审批时效从<strong>人工 4~8 小时 → 系统 &lt;1 小时</strong>，100% 审批留痕可追溯。</li>
+        <li><strong>实体产出：</strong>宜搭表单 + 三级审批流配置、API 回写脚本（~120 行）、四种场景通知模板。</li>
+      </ul>
+      <div class="tags">
+        <span class="tag">宜搭</span><span class="tag">Codex</span><span class="tag">低代码</span><span class="tag">REST API</span><span class="tag">钉钉</span><span class="tag">企业微信</span>
+      </div>
+    </div>
+<!-- Other Projects -->
+  <div class="section">
+    <div class="section-title">其他项目经历</div>
+
+    <div class="proj-box">
+      <div class="proj-box-header">
+        <span class="proj-name">蜂花洗护品牌年度库存与销售分析</span>
+        <span class="proj-date">2024</span>
+      </div>
+      <ul class="proj-bullets">
+        <li>汇总经营、库存、推广等 20+ 项核心指标，完成同比与季度拆解，支撑库存优化决策。</li>
+        <li>使用宜搭搭建库存数据上报与审批流程，实现各渠道库存数据实时同步，减少数据录入错误。</li>
+        <li>分析渠道 ROI 并优化投放结构，全年推广费占比由 8.3% 降至 7.04%，GMV 达 <strong>6572 万</strong>（超 KPI 6%）。</li>
+      </ul>
+    </div>
+
+    <div class="proj-box">
+      <div class="proj-box-header">
+        <span class="proj-name">蜂花老客 RFM 精细化运营</span>
+        <span class="proj-date">2024</span>
+      </div>
+      <ul class="proj-bullets">
+        <li>清洗 66.6 万老客数据，运用 <strong>K-means</strong> 聚类算法划分客群，支撑精准补货与库存规划。</li>
+        <li>利用 AI 工具辅助客群分析与策略生成，提升运营方案设计效率，按季度落地差异化运营策略。</li>
+        <li>老客复购率由 15% 提升至 <strong>19%</strong>，新增 GMV <strong>172.9 万</strong>。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Education -->
+  <div class="section">
+    <div class="section-title">教育经历</div>
+    <div class="edu-item">
+      <span class="edu-school">西安邮电大学（非全日制）</span>
+      <span class="edu-major">计算机科学与技术 · 本科</span>
+      <span class="edu-date">2026.03 - 2028.06</span>
+    </div>
+    <div class="edu-item">
+      <span class="edu-school">石家庄信息工程职业学院</span>
+      <span class="edu-major">艺术设计 · 大专</span>
+      <span class="edu-date">2020.09 - 2022.06</span>
+    </div>
+  </div>
+
+
+
+</div>
+
+  
+
+  <!-- AI 工作流项目 · 截图展示 + 作品集入口 -->
+  <div class="section" style="page-break-before: always;">
+    <div class="section-title">🤖 AI 自动化工作流项目展示</div>
+    <p style="font-size:11px;color:#888;margin-bottom:10px;">
+      以下为三个 AI 工作流系统的实际运行界面截图，完整交互版请扫描二维码或点击链接查看。
+    </p>
+
+    <!-- 截图区：2x2 grid, QR code in last cell -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div style="border:1px solid #e0e5ec;border-radius:6px;overflow:hidden;">
+        <img src="screenshot_p1.png" style="width:100%;display:block;" alt="SKU缺货率智能监控">
+        <div style="padding:4px 8px;background:#e8f0fe;font-size:10px;color:#1a3a5c;font-weight:600;">🔍 SKU 缺货率智能监控</div>
+      </div>
+      <div style="border:1px solid #e0e5ec;border-radius:6px;overflow:hidden;">
+        <img src="screenshot_p2.png" style="width:100%;display:block;" alt="日报周报AI自动生成">
+        <div style="padding:4px 8px;background:#ede9fe;font-size:10px;color:#5b21b6;font-weight:600;">📋 日报/周报 AI 自动生成</div>
+      </div>
+      <div style="border:1px solid #e0e5ec;border-radius:6px;overflow:hidden;">
+        <img src="screenshot_p3.png" style="width:100%;display:block;" alt="商家库存编辑审批自动化">
+        <div style="padding:4px 8px;background:#d1fae5;font-size:10px;color:#065f46;font-weight:600;">🔗 商家库存编辑审批自动化</div>
+      </div>
+      <!-- QR Code -->
+      <div style="border:1px solid #e0e5ec;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;background:#fafbfc;">
+        <img src="qrcode_placeholder.png" style="width:120px;height:120px;" alt="作品集二维码">
+        <p style="font-size:11px;color:#1a3a5c;font-weight:700;margin:8px 0 2px;">📱 扫码查看完整作品集</p>
+        <p style="font-size:9px;color:#888;text-align:center;line-height:1.4;">
+          包含三个系统的完整交互界面<br>
+          数据面板 · ECharts 图表 · 架构图
+        </p>
+        <p style="font-size:8px;color:#bbb;margin-top:4px;">（此二维码请替换为你的飞书作品集链接）</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

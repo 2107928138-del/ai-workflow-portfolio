@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商家库存编辑审批自动化 - 速卖通供应链运营</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#0f1923;--card:#17212b;--border:#253040;--text:#e0e6ed;--muted:#7b8ca0;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--blue:#38bdf8;--purple:#a78bfa}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{padding:20px 24px;max-width:1400px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:22px;font-weight:700}
+.header .badge{font-size:11px;background:rgba(52,211,153,.15);color:var(--green);padding:4px 12px;border-radius:12px}
+.status-bar{display:flex;gap:24px;font-size:12px;color:var(--muted);margin-bottom:16px;flex-wrap:wrap}
+.status-bar .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;background:var(--green)}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{cursor:pointer;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.tab:hover,.tab.active{background:#1d2d40;color:var(--text);border-color:#3b5068}
+.tab.active{border-color:var(--green);color:var(--green)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.card-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.card-value{font-size:26px;font-weight:700}
+.card-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr}}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.chart-box h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+.chart-box .chart{width:100%;height:280px}
+.flow-diagram{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;overflow-x:auto}
+.flow-nodes{display:flex;align-items:center;gap:0;min-width:800px;justify-content:center;flex-wrap:wrap}
+.flow-node{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:10px;padding:12px 16px;text-align:center;min-width:100px}
+.flow-node .n-title{font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px}
+.flow-node .n-desc{font-size:10px;color:var(--muted)}
+.flow-conn{color:var(--muted);padding:0 8px;font-size:18px;font-weight:700}
+.flow-branch{display:flex;flex-direction:column;align-items:center;gap:8px}
+.ai-box{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--yellow)}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 12px;color:var(--muted);font-weight:600;border-bottom:2px solid var(--border);font-size:11px}
+td{padding:8px 12px;border-bottom:1px solid rgba(37,48,64,.5)}
+.status-badge{font-size:10px;padding:2px 8px;border-radius:10px}
+.badge-approve{background:rgba(52,211,153,.15);color:var(--green)}
+.badge-reject{background:rgba(248,113,113,.15);color:var(--red)}
+.badge-pending{background:rgba(251,191,36,.15);color:var(--yellow)}
+.approval-level{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.level-l1{background:rgba(56,189,248,.15);color:var(--blue)}
+.level-l2{background:rgba(251,191,36,.15);color:var(--yellow)}
+.level-l3{background:rgba(248,113,113,.15);color:var(--red)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>🔗 商家活动库存编辑审批自动化</h1>
+      <div class="status-bar" style="margin-top:8px">
+        <span><span class="dot"></span> 系统运行中</span>
+        <span>本月审批：47 笔</span>
+        <span>平均耗时：1.8h</span>
+        <span>平台：宜搭低代码</span>
+      </div>
+    </div>
+    <div class="badge">速卖通供应链运营 · 吴天琦</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard')">📊 审批总览</div>
+    <div class="tab" onclick="switchTab('records')">📋 审批记录</div>
+    <div class="tab" onclick="switchTab('form')">📝 表单预览</div>
+    <div class="tab" onclick="switchTab('arch')">⚙️ 审批流架构</div>
+  </div>
+
+  <!-- ============ Tab 1: 审批总览 ============ -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+      <div class="card"><div class="card-label">📋 本月总申请</div><div class="card-value">47</div><div class="card-sub">↑ 12% 环比</div></div>
+      <div class="card"><div class="card-label">✅ 审批通过</div><div class="card-value" style="color:var(--green)">42</div><div class="card-sub">通过率 89.4%</div></div>
+      <div class="card"><div class="card-label">❌ 审批驳回</div><div class="card-value" style="color:var(--red)">5</div><div class="card-sub">驳回率 10.6%</div></div>
+      <div class="card"><div class="card-label">⏱ 平均耗时</div><div class="card-value">1.8h</div><div class="card-sub">人工时 4~8h → 系统 &lt;1h</div></div>
+      <div class="card"><div class="card-label">🔢 待审批</div><div class="card-value" style="color:var(--yellow)">3</div><div class="card-sub">当前队列中</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box"><h3>审批量分布（按层级）</h3><div class="chart" id="d1"></div></div>
+      <div class="chart-box"><h3>审批时效趋势（近6个月）</h3><div class="chart" id="d2"></div></div>
+      <div class="chart-box"><h3>驳回原因分析</h3><div class="chart" id="d3"></div></div>
+      <div class="chart-box"><h3>TOP 申请商家排行</h3><div class="chart" id="d4"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ Tab 2: 审批记录 ============ -->
+  <div id="tab-records" class="tab-content">
+    <div class="chart-box">
+      <h3>最近审批记录</h3>
+      <table>
+        <thead><tr><th>申请编号</th><th>商家</th><th>活动</th><th>变更量</th><th>审批层级</th><th>审批人</th><th>结果</th><th>耗时</th><th>时间</th></tr></thead>
+        <tbody>
+          <tr><td>INST-047</td><td>潮流服饰旗舰店</td><td>双12年终盛典</td><td>+150件</td><td><span class="approval-level level-l2">L2</span></td><td>张三</td><td><span class="status-badge badge-approve">✅ 通过</span></td><td>1.2h</td><td>12-15 14:30</td></tr>
+          <tr><td>INST-046</td><td>数码先锋店</td><td>双12年终盛典</td><td>+800件</td><td><span class="approval-level level-l3">L3</span></td><td>李四</td><td><span class="status-badge badge-pending">⏳ 审批中</span></td><td>-</td><td>12-15 13:15</td></tr>
+          <tr><td>INST-045</td><td>萌宠乐园</td><td>双12年终盛典</td><td>+60件</td><td><span class="approval-level level-l1">L1</span></td><td>王五</td><td><span class="status-badge badge-approve">✅ 通过</span></td><td>0.5h</td><td>12-15 11:00</td></tr>
+          <tr><td>INST-044</td><td>绅士男装馆</td><td>双12年终盛典</td><td>+450件</td><td><span class="approval-level level-l2">L2</span></td><td>张三</td><td><span class="status-badge badge-reject">❌ 驳回</span></td><td>3.2h</td><td>12-15 09:20</td></tr>
+          <tr><td>INST-043</td><td>运动达人家</td><td>双12年终盛典</td><td>+30件</td><td><span class="approval-level level-l1">L1</span></td><td>王五</td><td><span class="status-badge badge-approve">✅ 通过</span></td><td>0.3h</td><td>12-14 16:45</td></tr>
+          <tr><td>INST-042</td><td>潮流服饰旗舰店</td><td>双12年终盛典</td><td>+200件</td><td><span class="approval-level level-l2">L2</span></td><td>张三</td><td><span class="status-badge badge-approve">✅ 通过</span></td><td>1.5h</td><td>12-14 10:30</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 3: 表单预览 ============ -->
+  <div id="tab-form" class="tab-content">
+    <div class="chart-box" style="max-width:700px;margin:0 auto">
+      <h3>📝 商家活动库存编辑申请表（宜搭）</h3>
+      <div style="background:var(--bg);border-radius:8px;padding:20px;border:1px solid var(--border)">
+        <div style="margin-bottom:12px"><label style="color:var(--muted);font-size:11px;display:block;margin-bottom:4px">商家名称</label><div style="padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text)">潮流服饰旗舰店</div></div>
+        <div style="margin-bottom:12px"><label style="color:var(--muted);font-size:11px;display:block;margin-bottom:4px">关联活动 <span style="color:var(--red)">*</span></label><div style="padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text)">双12年终盛典 (2025.12.10-12.18)</div></div>
+        <div style="margin-bottom:12px"><label style="color:var(--muted);font-size:11px;display:block;margin-bottom:6px">需修改的 SKU <span style="color:var(--red)">*</span></label>
+          <table style="font-size:11px;margin-bottom:8px">
+            <thead><tr><th>SKU ID</th><th>原库存</th><th>申请库存</th><th>变更量</th></tr></thead>
+            <tbody><tr><td>SKU001 连衣裙-碎花</td><td>350</td><td style="color:var(--green)">450</td><td style="color:var(--green)">+100</td></tr>
+            <tr><td>SKU002 连衣裙-纯色</td><td>250</td><td style="color:var(--green)">300</td><td style="color:var(--green)">+50</td></tr></tbody>
+          </table>
+          <div style="text-align:center;padding:6px;border:1px dashed var(--border);border-radius:4px;color:var(--muted);font-size:11px;cursor:pointer">+ 添加 SKU</div>
+        </div>
+        <div style="margin-bottom:16px"><label style="color:var(--muted);font-size:11px;display:block;margin-bottom:4px">变更原因 <span style="color:var(--red)">*</span></label><div style="padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);min-height:60px">近期销量增长超预期，当前库存不足以支撑双12活动，申请追加备货。已附上近30天销售数据截图。</div></div>
+        <div style="margin-bottom:16px"><label style="color:var(--muted);font-size:11px;display:block;margin-bottom:4px">佐证材料</label><div style="display:flex;gap:8px"><span style="padding:4px 10px;background:rgba(56,189,248,.1);border-radius:4px;font-size:11px;color:var(--blue)">📎 销售数据截图.png</span><span style="padding:4px 10px;background:rgba(56,189,248,.1);border-radius:4px;font-size:11px;color:var(--blue)">📎 库存系统截图.png</span></div></div>
+        <div style="padding:10px 16px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:8px;font-size:11px;color:var(--green);margin-bottom:12px">✅ 表单校验通过 | 合计变更量：+150 件 → 路由至 <strong>L2 运营经理审批</strong></div>
+        <div style="text-align:center"><span style="display:inline-block;padding:10px 32px;background:var(--green);color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">提交审批</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Tab 4: 审批流架构 ============ -->
+  <div id="tab-arch" class="tab-content">
+    <div class="flow-diagram">
+      <div class="flow-nodes">
+        <div class="flow-node"><div class="n-title">📝 商家提交</div><div class="n-desc">宜搭表单</div></div>
+        <div class="flow-conn">→</div>
+        <div class="flow-node"><div class="n-title">✅ 自动校验</div><div class="n-desc">库存≥0<br>变更≤上限</div></div>
+        <div class="flow-conn">→</div>
+        <div class="flow-node" style="background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.2)"><div class="n-title" style="color:var(--yellow)">⚡ 规则引擎</div><div class="n-desc">分级路由</div></div>
+        <div class="flow-conn">→</div>
+        <div class="flow-branch">
+          <div class="flow-node"><div class="n-title" style="color:var(--blue)">L1 主管</div><div class="n-desc">&lt; 100件</div></div>
+          <div class="flow-node"><div class="n-title" style="color:var(--yellow)">L2 经理</div><div class="n-desc">100~500件</div></div>
+          <div class="flow-node"><div class="n-title" style="color:var(--red)">L3 PM</div><div class="n-desc">&gt; 500件</div></div>
+        </div>
+        <div class="flow-conn">→</div>
+        <div class="flow-node"><div class="n-title">🔗 API 回写</div><div class="n-desc">库存系统</div></div>
+        <div class="flow-conn">→</div>
+        <div class="flow-node"><div class="n-title">🔔 通知推送</div><div class="n-desc">钉钉/企微</div></div>
+      </div>
+    </div>
+    <div class="ai-box">
+      <strong>🤖 AI 参与环节：</strong>表单 JSON Schema 生成 (Codex) | 分级路由 JS 逻辑 (Codex) | API 回写脚本 HMAC 签名 (Codex) | 四种场景通知模板 (Codex) —— 从表单设计到后端回写全链路 AI 辅助
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box"><h3>审批流前后对比</h3><div class="chart" id="a1"></div></div>
+      <div class="chart-box"><h3>各层级审批量占比</h3><div class="chart" id="a2"></div></div>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card"><div class="card-label">📋 表单字段</div><div class="card-value">7</div><div class="card-sub">含校验规则</div></div>
+      <div class="card"><div class="card-label">⚙️ 审批层级</div><div class="card-value">3级</div><div class="card-sub">自动分级路由</div></div>
+      <div class="card"><div class="card-label">⏱ 超时机制</div><div class="card-value">4h</div><div class="card-sub">自动升级</div></div>
+      <div class="card"><div class="card-label">📊 数据看板</div><div class="card-value">6项</div><div class="card-sub">宜搭内置报表</div></div>
+    </div>
+  </div>
+
+  <div class="footer">商家库存编辑审批自动化 · 基于宜搭低代码平台 · 速卖通供应链运营 · 吴天琦 · 演示数据仅供展示</div>
+</div>
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.tab[onclick*="'+name+'"]').classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='dashboard'){initD1();initD2();initD3();initD4()}
+  if(name==='arch'){initA1();initA2()}
+}
+function eChart(id){return echarts.init(document.getElementById(id))}
+
+function initD1(){eChart('d1').setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','70%'],center:['50%','55%'],data:[{value:32,name:'L1 主管审批',itemStyle:{color:'#38bdf8'}},{value:12,name:'L2 运营经理',itemStyle:{color:'#fbbf24'}},{value:3,name:'L3 PM审批',itemStyle:{color:'#f87171'}}],label:{color:'#7b8ca0',fontSize:10}}]})}
+function initD2(){eChart('d2').setOption({tooltip:{trigger:'axis'},grid:{left:50,right:20,top:10,bottom:30},xAxis:{type:'category',data:['7月','8月','9月','10月','11月','12月'],axisLabel:{color:'#7b8ca0'}},yAxis:{type:'value',name:'小时',axisLabel:{color:'#7b8ca0'}},series:[{name:'旧流程',data:[6.5,7.0,6.8,5.5,4.2,1.8],type:'line',smooth:true,lineStyle:{color:'#f87171'},itemStyle:{color:'#f87171'}},{name:'审批流上线后',data:[6.5,6.8,6.2,2.5,1.5,1.2],type:'line',smooth:true,lineStyle:{color:'#34d399'},itemStyle:{color:'#34d399'}}]})}
+function initD3(){eChart('d3').setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:'60%',center:['50%','50%'],data:[{value:3,name:'库存数据不符',itemStyle:{color:'#f87171'}},{value:1,name:'活动已结束',itemStyle:{color:'#fbbf24'}},{value:1,name:'供应商产能不足',itemStyle:{color:'#38bdf8'}}],label:{color:'#7b8ca0',fontSize:10}}]})}
+function initD4(){eChart('d4').setOption({tooltip:{trigger:'axis'},grid:{left:80,right:20,top:10,bottom:30},xAxis:{type:'value',axisLabel:{color:'#7b8ca0'}},yAxis:{type:'category',data:['潮流服饰','数码先锋','萌宠乐园','绅士男装','运动达人'],axisLabel:{color:'#7b8ca0'}},series:[{data:[12,8,7,6,5],type:'bar',barWidth:16,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#34d399'},{offset:1,color:'#38bdf8'}])},label:{show:true,position:'right',color:'#e0e6ed',fontSize:11}}]})}
+
+function initA1(){eChart('a1').setOption({tooltip:{trigger:'axis'},grid:{left:50,right:20,top:10,bottom:50},xAxis:{type:'category',data:['旧流程<br>(人工)','新流程<br>(宜搭自动化)'],axisLabel:{color:'#7b8ca0'}},yAxis:{type:'value',name:'小时',axisLabel:{color:'#7b8ca0'}},series:[{data:[6,1.8],type:'bar',barWidth:50,itemStyle:{borderRadius:[4,4,0,0],color:p=>p.dataIndex?'#34d399':'#f87171'},label:{show:true,position:'top',color:'#e0e6ed',formatter:'{c}h'}}]})}
+function initA2(){eChart('a2').setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:'55%',center:['50%','50%'],data:[{value:68,name:'L1 主管',itemStyle:{color:'#38bdf8'}},{value:26,name:'L2 经理',itemStyle:{color:'#fbbf24'}},{value:6,name:'L3 PM',itemStyle:{color:'#f87171'}}],label:{color:'#7b8ca0',fontSize:10,formatter:'{b}\n{d}%'}}]})}
+
+initD1();initD2();initD3();initD4();
+window.addEventListener('resize',()=>{['d1','d2','d3','d4','a1','a2'].forEach(id=>{const d=document.getElementById(id);if(d){const i=echarts.getInstanceByDom(d);i&&i.resize()}})});
+</script>
+</body>
+</html>

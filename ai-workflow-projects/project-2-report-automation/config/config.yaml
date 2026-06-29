@@ -1,0 +1,82 @@
+# ============================================================
+# 报告引擎配置文件
+# ============================================================
+
+# 报告模式
+report:
+  daily:
+    schedule: "0 8 * * *"       # 每日 08:00
+    lookback_days: 1            # 回溯天数
+  weekly:
+    schedule: "0 9 * * 1"       # 每周一 09:00
+    lookback_days: 7
+
+# 指标定义 (哪些指标需要计算环比/同比)
+metrics:
+  - name: total_gmv
+    label: "总GMV"
+    unit: "元"
+    compare: ["wow", "mom", "yoy"]
+  - name: total_orders
+    label: "总订单数"
+    unit: "单"
+    compare: ["wow"]
+  - name: out_of_stock_rate
+    label: "缺货率"
+    unit: "%"
+    compare: ["wow"]
+    alert_threshold: 5.0
+  - name: on_time_delivery_rate
+    label: "准时发货率"
+    unit: "%"
+    compare: ["wow"]
+    alert_threshold: 90.0
+  - name: high_risk_sku_count
+    label: "高风险SKU数"
+    unit: "个"
+    compare: ["wow"]
+
+# 数据源
+data_sources:
+  odps:
+    project: "alibaba_aliexpress"
+    tables:
+      - dwd_order_detail_di
+      - dim_sku_info
+      - dws_fulfillment_di
+  fbi_api:
+    base_url: "https://fbi.alibaba-inc.com/api"
+    charts:
+      - trend_chart
+      - merchant_ranking
+      - category_heatmap
+
+# AI 分析配置
+ai:
+  model: "gpt-4"
+  system_prompt: |
+    你是一位资深供应链运营分析师。请根据提供的数据指标，
+    生成专业、数据驱动的分析洞察，包括：
+    1. 核心发现 (1-2句话概览)
+    2. 深度分析 (2-3个关键洞察)
+    3. 行动建议 (2-3条可执行建议)
+    要求：语言简洁、数据引用准确、避免主观臆断。
+
+# 推送配置
+email:
+  host: "smtp.qiye.aliyun.com"
+  port: 465
+  from: "supply-chain-report@aliexpress.com"
+  to:
+    - "ops-team@aliexpress.com"
+    - "manager@aliexpress.com"
+
+wecom:
+  webhook_url: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx"
+  notify_on: ["daily_complete", "weekly_complete", "alert"]
+
+# 输出
+output:
+  html_dir: "/data/reports/html"
+  pdf_dir: "/data/reports/pdf"
+  archive_days: 90

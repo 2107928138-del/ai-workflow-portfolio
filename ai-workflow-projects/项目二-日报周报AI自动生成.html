@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日报/周报 AI 自动生成 - 速卖通供应链运营</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{--bg:#0f1923;--card:#17212b;--border:#253040;--text:#e0e6ed;--muted:#7b8ca0;--blue:#38bdf8;--purple:#a78bfa;--green:#34d399;--yellow:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{padding:20px 24px;max-width:1400px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:22px;font-weight:700}
+.header .badge{font-size:11px;background:rgba(129,140,248,.15);color:var(--purple);padding:4px 12px;border-radius:12px}
+.status-bar{display:flex;gap:24px;font-size:12px;color:var(--muted);margin-bottom:16px;flex-wrap:wrap}
+.status-bar .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;background:var(--green)}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{cursor:pointer;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--border);color:var(--muted);transition:all .2s}
+.tab:hover,.tab.active{background:#1d2d40;color:var(--text);border-color:#3b5068}
+.tab.active{border-color:var(--purple);color:var(--purple)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.card-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.card-value{font-size:26px;font-weight:700}
+.card-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr}}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.chart-box h3{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--muted)}
+.chart-box .chart{width:100%;height:280px}
+.report-preview{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:20px;max-width:700px;margin-left:auto;margin-right:auto}
+.report-preview h2{font-size:15px;color:var(--purple);margin-bottom:16px;text-align:center}
+.report-preview .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.report-preview .kpi{text-align:center;background:rgba(129,140,248,.06);border-radius:8px;padding:12px 8px}
+.report-preview .kpi-val{font-size:20px;font-weight:700}
+.report-preview .kpi-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.report-preview .insight{background:rgba(251,191,36,.06);border-left:3px solid var(--yellow);padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;margin-bottom:10px;color:#d4a915}
+.flow-viz{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:16px;font-size:12px}
+.flow-step{background:rgba(129,140,248,.1);color:var(--purple);padding:8px 14px;border-radius:8px;font-weight:500;text-align:center;line-height:1.4}
+.flow-arrow{color:var(--muted)}
+.ai-box{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--yellow)}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 12px;color:var(--muted);font-weight:600;border-bottom:2px solid var(--border);font-size:11px}
+td{padding:8px 12px;border-bottom:1px solid rgba(37,48,64,.5)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>📋 供应链日报/周报 AI 自动生成</h1>
+      <div class="status-bar" style="margin-top:8px">
+        <span><span class="dot"></span> 系统运行中</span>
+        <span>日报：每日 08:30 自动生成</span>
+        <span>周报：每周一 09:00 自动生成</span>
+        <span>已产出 45 期日报 · 8 期周报</span>
+      </div>
+    </div>
+    <div class="badge">速卖通供应链运营 · 吴天琦</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('today')">📊 今日日报</div>
+    <div class="tab" onclick="switchTab('weekly')">📈 本周周报</div>
+    <div class="tab" onclick="switchTab('history')">📚 历史报告</div>
+    <div class="tab" onclick="switchTab('arch')">⚙️ 工作流架构</div>
+  </div>
+
+  <!-- ============ Tab 1: 今日日报 ============ -->
+  <div id="tab-today" class="tab-content active">
+    <div class="cards">
+      <div class="card"><div class="card-label">📅 报告日期</div><div class="card-value">12月15日</div><div class="card-sub">生成时间：08:30:00</div></div>
+      <div class="card"><div class="card-label">⏱ 生成耗时</div><div class="card-value" style="color:var(--green)">12.3s</div><div class="card-sub">含 AI 分析 3.2s</div></div>
+      <div class="card"><div class="card-label">📧 推送状态</div><div class="card-value" style="color:var(--green)">✅ 已推送</div><div class="card-sub">邮件 + 企业微信</div></div>
+      <div class="card"><div class="card-label">🤖 AI 参与</div><div class="card-value" style="color:var(--purple)">√</div><div class="card-sub">分析洞察 · 3个发现</div></div>
+    </div>
+
+    <div class="report-preview">
+      <h2>📊 速卖通供应链运营日报</h2>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-val" style="color:var(--blue)">¥128.5万</div><div class="kpi-lbl">总 GMV</div></div>
+        <div class="kpi"><div class="kpi-val">3,240</div><div class="kpi-lbl">总订单数</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--green)">3.2%</div><div class="kpi-lbl">缺货率 ↓0.5pp</div></div>
+        <div class="kpi"><div class="kpi-val">94.5%</div><div class="kpi-lbl">准时发货率</div></div>
+      </div>
+      <div class="insight"><strong>🤖 AI 核心发现：</strong>缺货率持续改善，高风险 SKU 降至 8 个（↓2）。「潮流服饰旗舰店」紧急补货后 3 个 SKU 已降级，但「绅士男装馆」POLO 衫仍处于高风险，建议持续跟进。</div>
+      <div class="insight" style="border-left-color:var(--purple)"><strong>📌 履约观察：</strong>准时发货率 94.5%（↑1.2pp），平均发货时长 5.8 天（↓0.3 天），改善主要来自上周定向沟通的 3 家问题商家。</div>
+      <div class="insight" style="border-left-color:var(--blue)"><strong>⚠️ 需关注：</strong>宠物用品品类库存持续走低，猫砂、猫粮两大 SKU 日均销量高于补货速度，建议提前沟通双十二备货。</div>
+    </div>
+  </div>
+
+  <!-- ============ Tab 2: 本周周报 ============ -->
+  <div id="tab-weekly" class="tab-content">
+    <div class="cards">
+      <div class="card"><div class="card-label">📅 报告周期</div><div class="card-value">第50周</div><div class="card-sub">12.09 - 12.15</div></div>
+      <div class="card"><div class="card-label">📊 周度 GMV</div><div class="card-value" style="color:var(--blue)">¥895万</div><div class="card-sub">↑ 3.5% 环比</div></div>
+      <div class="card"><div class="card-label">🏪 商家沟通</div><div class="card-value">18家</div><div class="card-sub">改善率 66.7%</div></div>
+      <div class="card"><div class="card-label">📈 缺货率趋势</div><div class="card-value" style="color:var(--green)">3.8→3.0%</div><div class="card-sub">↓ 0.8pp 周内降幅</div></div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box"><h3>日度缺货率趋势（本周）</h3><div class="chart" id="w1"></div></div>
+      <div class="chart-box"><h3>品类缺货率对比</h3><div class="chart" id="w2"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ Tab 3: 历史报告 ============ -->
+  <div id="tab-history" class="tab-content">
+    <div class="chart-grid">
+      <div class="chart-box"><h3>报告生成数量趋势</h3><div class="chart" id="h1"></div></div>
+      <div class="chart-box"><h3>报告时效统计</h3><div class="chart" id="h2"></div></div>
+    </div>
+    <div class="chart-box"><h3>最近4周周报摘要</h3>
+      <table>
+        <thead><tr><th>周期</th><th>GMV</th><th>订单</th><th>缺货率</th><th>广告ROI</th><th>核心发现</th></tr></thead>
+        <tbody>
+          <tr><td>第50周</td><td>¥895万 ↑3.5%</td><td>22,680</td><td>3.0% ↓0.8pp</td><td>2.8x</td><td>缺货治理效果显著，18家商家定向沟通</td></tr>
+          <tr><td>第49周</td><td>¥865万 ↑2.1%</td><td>22,050</td><td>3.8% ↓0.3pp</td><td>2.6x</td><td>双12备货启动，库存压力增大</td></tr>
+          <tr><td>第48周</td><td>¥847万 ↑1.8%</td><td>21,600</td><td>4.1% ↓0.2pp</td><td>2.5x</td><td>新商家入驻带来库存波动</td></tr>
+          <tr><td>第47周</td><td>¥832万 -</td><td>21,200</td><td>4.3% -</td><td>2.4x</td><td>缺货监控体系上线，开始系统化治理</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Tab 4: 工作流架构 ============ -->
+  <div id="tab-arch" class="tab-content">
+    <div class="flow-viz">
+      <span class="flow-step">⏰ Cron<br>08:30触发</span><span class="flow-arrow">→</span>
+      <span class="flow-step">📡 SQL 取数<br><small>ODPS数仓</small></span><span class="flow-arrow">→</span>
+      <span class="flow-step">⚡ Python<br>指标计算</span><span class="flow-arrow">→</span>
+      <span class="flow-step">📸 FBI API<br>图表截图</span><span class="flow-arrow">→</span>
+      <span class="flow-step">🤖 AI 分析<br><small>洞察生成</small></span><span class="flow-arrow">→</span>
+      <span class="flow-step">🎨 Jinja2<br>模板渲染</span><span class="flow-arrow">→</span>
+      <span class="flow-step">📧 邮件+企微<br>自动推送</span>
+    </div>
+    <div class="ai-box">
+      <strong>🤖 AI 参与环节：</strong>Python 脚本编写 (Codex) | Jinja2 模板生成 (Codex) | 分析洞察 Prompt 生成 | HTML 邮件模板 —— AI 辅助下 report_engine.py 约 80% 代码由 Codex 生成
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box"><h3>报告制作流程时间对比</h3><div class="chart" id="a1"></div></div>
+      <div class="chart-box"><h3>各环节耗时占比</h3><div class="chart" id="a2"></div></div>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+      <div class="card"><div class="card-label">📋 报告模板</div><div class="card-value">2套</div><div class="card-sub">日报 + 周报 Jinja2 模板</div></div>
+      <div class="card"><div class="card-label">📊 监控指标</div><div class="card-value">10+</div><div class="card-sub">GMV/订单/缺货率/履约…</div></div>
+      <div class="card"><div class="card-label">📧 推送渠道</div><div class="card-value">2个</div><div class="card-sub">邮件 + 企业微信</div></div>
+    </div>
+  </div>
+
+  <div class="footer">供应链日报/周报 AI 自动生成系统 · 速卖通供应链运营 · 吴天琦 · 演示数据仅供展示</div>
+</div>
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.tab[onclick*="'+name+'"]').classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='weekly'){initW1();initW2()}
+  if(name==='history'){initH1();initH2()}
+  if(name==='arch'){initA1();initA2()}
+}
+function eChart(id){return echarts.init(document.getElementById(id))}
+
+function initW1(){eChart('w1').setOption({
+  tooltip:{trigger:'axis'},grid:{left:40,right:20,top:10,bottom:30},
+  xAxis:{type:'category',data:['12/09','12/10','12/11','12/12','12/13','12/14','12/15'],axisLabel:{color:'#7b8ca0'}},
+  yAxis:{type:'value',name:'%',axisLabel:{color:'#7b8ca0'}},
+  series:[{data:[3.8,3.5,3.2,3.1,2.9,2.8,3.0],type:'line',smooth:true,lineStyle:{color:'#a78bfa',width:2},areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(167,139,250,.3)'},{offset:1,color:'rgba(167,139,250,0)'}])},itemStyle:{color:'#a78bfa'}}]
+})}
+function initW2(){eChart('w2').setOption({
+  tooltip:{trigger:'axis'},grid:{left:50,right:20,top:10,bottom:30},
+  xAxis:{type:'value',axisLabel:{color:'#7b8ca0'}},
+  yAxis:{type:'category',data:['女装','男装','3C数码','运动户外','宠物用品'],axisLabel:{color:'#7b8ca0'}},
+  series:[{data:[2.8,5.1,1.2,2.5,4.5],type:'bar',barWidth:20,itemStyle:{color:p=>['#34d399','#f87171','#38bdf8','#fbbf24','#f87171'][p.dataIndex]},label:{show:true,position:'right',color:'#e0e6ed',formatter:'{c}%'}}]
+})}
+
+function initH1(){eChart('h1').setOption({
+  tooltip:{trigger:'axis'},grid:{left:40,right:20,top:10,bottom:30},
+  xAxis:{type:'category',data:['W47','W48','W49','W50','W51','W52'],axisLabel:{color:'#7b8ca0'}},
+  yAxis:{type:'value',axisLabel:{color:'#7b8ca0'}},
+  series:[{name:'日报',data:[5,5,5,5,5,5],type:'bar',stack:'a',itemStyle:{color:'#38bdf8'}},{name:'周报',data:[1,1,1,1,1,1],type:'bar',stack:'a',itemStyle:{color:'#a78bfa'}}]
+})}
+function initH2(){eChart('h2').setOption({
+  tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','70%'],center:['50%','55%'],
+    data:[{value:5,name:'< 10秒',itemStyle:{color:'#34d399'}},{value:18,name:'10~15秒',itemStyle:{color:'#38bdf8'}},{value:12,name:'15~20秒',itemStyle:{color:'#fbbf24'}},{value:2,name:'> 20秒',itemStyle:{color:'#f87171'}}],
+    label:{color:'#7b8ca0',fontSize:10}
+  }]
+})}
+
+function initA1(){eChart('a1').setOption({
+  tooltip:{trigger:'axis'},grid:{left:50,right:20,top:10,bottom:50},
+  xAxis:{type:'category',data:['人工方式','AI辅助后'],axisLabel:{color:'#7b8ca0'}},
+  yAxis:{type:'value',name:'分钟',axisLabel:{color:'#7b8ca0'}},
+  series:[{data:[150,15],type:'bar',barWidth:50,itemStyle:{borderRadius:[4,4,0,0],color:p=>p.dataIndex?p.dataIndex?'#34d399':'#f87171':'#f87171'},label:{show:true,position:'top',color:'#e0e6ed',formatter:'{c}分钟'}}]
+})}
+function initA2(){eChart('a2').setOption({
+  tooltip:{trigger:'item'},series:[{type:'pie',radius:'55%',center:['50%','50%'],
+    data:[{value:3.2,name:'AI分析',itemStyle:{color:'#fbbf24'}},{value:4.1,name:'模板渲染',itemStyle:{color:'#a78bfa'}},{value:2.8,name:'数据取数',itemStyle:{color:'#38bdf8'}},{value:1.5,name:'推送发送',itemStyle:{color:'#34d399'}},{value:0.7,name:'其他',itemStyle:{color:'#64748b'}}],
+    label:{color:'#7b8ca0',fontSize:10,formatter:'{b}: {c}s'}
+  }]
+})}
+
+initW1();initW2();
+window.addEventListener('resize',()=>{['w1','w2','h1','h2','a1','a2'].forEach(id=>{const d=document.getElementById(id);if(d){const i=echarts.getInstanceByDom(d);i&&i.resize()}})});
+</script>
+</body>
+</html>

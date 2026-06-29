@@ -1,0 +1,176 @@
+{
+  "flow": {
+    "name": "商家活动库存编辑审批流",
+    "version": "2.0",
+    "trigger_form": "form_inventory_edit_approval",
+    "description": "根据库存变更量自动分级路由的三级审批流程"
+  },
+  "global_settings": {
+    "timeout_hours": 4,
+    "timeout_action": "auto_escalate",
+    "timeout_escalate_to": "process_owner",
+    "allow_delegation": true,
+    "enable_reject_reason": true
+  },
+  "route_engine": {
+    "type": "js_expression",
+    "description": "Codex 辅助编写的分级路由 JS 逻辑",
+    "code": "/**\n * 宜搭审批流分级路由规则 (Codex 辅助生成)\n */\nfunction getApprovalLevel(totalChange) {\n  const absChange = Math.abs(totalChange);\n  if (absChange <= 100) return 'L1';\n  if (absChange <= 500) return 'L2';\n  return 'L3';\n}\n\n// L1: 主管审批 (变更 < 100件)\n// L2: 运营经理审批 (变更 100~500件)\n// L3: PM审批 (变更 > 500件)\nexports.route = function(ctx) {\n  const totalChange = ctx.formData.total_change;\n  return getApprovalLevel(totalChange);\n};"
+  },
+  "nodes": [
+    {
+      "id": "node_start",
+      "type": "start",
+      "label": "商家提交"
+    },
+    {
+      "id": "node_validation",
+      "type": "auto_validation",
+      "label": "系统自动校验",
+      "rules": [
+        "库存不能为负数",
+        "申请库存不超过活动上限",
+        "变更原因≥10字"
+      ],
+      "on_fail": "返回商家修改后重新提交"
+    },
+    {
+      "id": "node_route",
+      "type": "condition_router",
+      "label": "分级路由",
+      "description": "根据 total_change 字段自动路由到对应审批层级"
+    },
+    {
+      "id": "node_L1",
+      "type": "approval",
+      "label": "L1 主管审批",
+      "approvers": [
+        "${merchant.supervisor}"
+      ],
+      "condition": "abs(total_change) <= 100",
+      "sla_hours": 2,
+      "actions": {
+        "approve": "流程继续，进入 API 回写",
+        "reject": "返回商家，附驳回理由"
+      }
+    },
+    {
+      "id": "node_L2",
+      "type": "approval",
+      "label": "L2 运营经理审批",
+      "approvers": [
+        "ops_manager"
+      ],
+      "condition": "abs(total_change) > 100 && abs(total_change) <= 500",
+      "sla_hours": 3,
+      "actions": {
+        "approve": "流程继续，进入 API 回写",
+        "reject": "返回商家，附驳回理由"
+      }
+    },
+    {
+      "id": "node_L3",
+      "type": "approval",
+      "label": "L3 PM 审批",
+      "approvers": [
+        "pm_group"
+      ],
+      "condition": "abs(total_change) > 500",
+      "sla_hours": 4,
+      "require_all": false,
+      "min_approvals": 1,
+      "actions": {
+        "approve": "流程继续，进入 API 回写",
+        "reject": "返回商家，附驳回理由"
+      }
+    },
+    {
+      "id": "node_callback",
+      "type": "webhook",
+      "label": "API 库存回写",
+      "url": "http://inventory-api.internal/activity/stock/update",
+      "method": "POST",
+      "trigger": "on_approve",
+      "retry": 3,
+      "retry_interval_sec": 30
+    },
+    {
+      "id": "node_notify",
+      "type": "notification",
+      "label": "结果通知",
+      "channels": [
+        "dingtalk",
+        "wecom"
+      ],
+      "notify_targets": [
+        "${applicant}",
+        "ops_notify_group"
+      ]
+    },
+    {
+      "id": "node_end",
+      "type": "end",
+      "label": "流程结束"
+    }
+  ],
+  "edges": [
+    {
+      "from": "node_start",
+      "to": "node_validation"
+    },
+    {
+      "from": "node_validation",
+      "to": "node_route"
+    },
+    {
+      "from": "node_route",
+      "to": "node_L1",
+      "condition": "L1"
+    },
+    {
+      "from": "node_route",
+      "to": "node_L2",
+      "condition": "L2"
+    },
+    {
+      "from": "node_route",
+      "to": "node_L3",
+      "condition": "L3"
+    },
+    {
+      "from": "node_L1",
+      "to": "node_callback",
+      "action": "approve"
+    },
+    {
+      "from": "node_L2",
+      "to": "node_callback",
+      "action": "approve"
+    },
+    {
+      "from": "node_L3",
+      "to": "node_callback",
+      "action": "approve"
+    },
+    {
+      "from": "node_callback",
+      "to": "node_notify"
+    },
+    {
+      "from": "node_notify",
+      "to": "node_end"
+    }
+  ],
+  "dashboard": {
+    "enabled": true,
+    "metrics": [
+      "总申请次数",
+      "通过率",
+      "驳回率",
+      "平均审批时长",
+      "各层级审批量分布",
+      "TOP 驳回原因",
+      "商家申请频率排行"
+    ]
+  }
+}

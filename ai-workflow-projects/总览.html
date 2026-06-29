@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 自动化工作流项目集 - 吴天琦</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-hover: #263348;
+    --accent1: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #60a5fa;
+    --highlight: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 32px 20px;
+  }
+
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 48px 16px 40px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 40%, #1a1a3e 100%);
+    border-radius: 16px;
+    margin-bottom: 32px;
+    border: 1px solid var(--border);
+  }
+  .hero .badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    color: var(--accent1);
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .hero .subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 16px; }
+  .hero .meta { font-size: 13px; color: var(--text-muted); display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+  .hero .meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* Project cards */
+  .projects { display: grid; gap: 20px; }
+  .project-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .project-card:hover {
+    background: var(--card-hover);
+    border-color: #4b5563;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .project-card:hover .card-accent {
+    width: 100%;
+  }
+
+  .card-header {
+    padding: 24px 24px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(129,140,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .card-title { flex: 1; }
+  .card-title h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .card-title .date { font-size: 12px; color: var(--text-muted); }
+  .card-accent {
+    height: 3px;
+    width: 0;
+    transition: width 0.4s ease;
+  }
+  .accent-blue { background: var(--accent1); }
+  .accent-purple { background: var(--accent2); }
+  .accent-green { background: var(--accent3); }
+
+  .card-body { padding: 0 24px 20px; }
+  .desc { font-size: 13.5px; color: var(--text-muted); margin-bottom: 12px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag {
+    font-size: 11px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+
+  .flow-box {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+    margin-bottom: 14px;
+  }
+  .flow-step {
+    background: rgba(56,189,248,0.1);
+    color: var(--accent1);
+    padding: 3px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .flow-arrow { color: var(--text-muted); font-size: 10px; }
+
+  .ai-box {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+  }
+  .ai-box .ai-title {
+    font-size: 11.5px; font-weight: 600; color: var(--highlight); margin-bottom: 6px;
+  }
+  .ai-box ul { padding-left: 16px; }
+  .ai-box li { font-size: 11.5px; color: var(--text-muted); margin-bottom: 2px; }
+  .ai-box li strong { color: var(--text); }
+
+  .files-mini {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 6px;
+  }
+  .file-chip {
+    background: #0f172a;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 10.5px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .file-chip .ext {
+    font-size: 9px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .effect-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .effect-card {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.15);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+  }
+  .effect-card .val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent3);
+  }
+  .effect-card .lbl {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Section title */
+  .section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; margin-top: 16px;
+  }
+  .section-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .section-head h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 0 20px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 24px; }
+    .effect-grid { grid-template-columns: 1fr; }
+    .files-mini { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="badge">AI AUTOMATION PROJECTS</div>
+    <h1>AI 自动化工作流项目集</h1>
+    <p class="subtitle">速卖通供应链运营 · 吴天琦 · 2025</p>
+    <div class="meta">
+      <span>📍 阿里巴巴 · 速卖通</span>
+      <span>📅 2025.10 - 至今</span>
+      <span>📁 三个项目 · 22个文件</span>
+    </div>
+  </div>
+
+  <!-- Projects -->
+  <div class="projects">
+
+    <!-- Project 1 -->
+    <div class="project-card" onclick="window.open('项目一-SKU缺货率智能监控.html')">
+      <div class="card-header">
+        <div class="card-icon icon-blue">🔍</div>
+        <div class="card-title">
+          <h2 style="color:var(--accent1);">项目一：SKU 缺货率智能监控与自动预警</h2>
+          <span class="date">2025.10 - 至今 · 生产环境运行中</span>
+        </div>
+      </div>
+      <div class="card-accent accent-blue"></div>
+      <div class="card-body">
+        <p class="desc">每日自动监控 5,000+ SKU 库存，智能识别缺货风险并分级预警，替代人工 T+1 巡检。</p>
+
+        <div class="flow-box">
+          <span class="flow-step">SQL 定时取数</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Python 数据清洗</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">缺货阈值计算</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">异常分级</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">FBI 看板刷新</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">企微/钉钉预警</span>
+        </div>
+
+        <div class="tags">
+          <span class="tag">SQL</span><span class="tag">Python</span><span class="tag">Pandas</span>
+          <span class="tag">Codex</span><span class="tag">FBI</span><span class="tag">Crontab</span>
+          <span class="tag">企业微信API</span><span class="tag">钉钉API</span>
+        </div>
+
+        <div class="files-mini">
+          <div class="file-chip">📄 sku_daily_monitor <span class="ext">SQL</span></div>
+          <div class="file-chip">📄 merchant_ranking <span class="ext">SQL</span></div>
+          <div class="file-chip">📄 category_heatmap <span class="ext">SQL</span></div>
+          <div class="file-chip">🐍 data_fetch <span class="ext">PY</span></div>
+          <div class="file-chip">🐍 anomaly_detect <span class="ext">PY</span></div>
+          <div class="file-chip">🐍 alert_push <span class="ext">PY</span></div>
+        </div>
+
+        <div class="effect-grid">
+          <div class="effect-card"><div class="val">T+1 → 30min</div><div class="lbl">问题发现时效</div></div>
+          <div class="effect-card"><div class="val">+30%</div><div class="lbl">问题发现效率提升</div></div>
+          <div class="effect-card"><div class="val">200+/天</div><div class="lbl">自动识别异常 SKU</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 2 -->
+    <div class="project-card" onclick="window.open('项目二-日报周报AI自动生成.html')">
+      <div class="card-header">
+        <div class="card-icon icon-purple">📋</div>
+        <div class="card-title">
+          <h2 style="color:var(--accent2);">项目二：供应链日报/周报 AI 自动生成</h2>
+          <span class="date">2025.10 - 至今 · 每日自动运行</span>
+        </div>
+      </div>
+      <div class="card-accent accent-purple"></div>
+      <div class="card-body">
+        <p class="desc">将报告制作从 2~3 小时手工编写升级为 AI 辅助 + 自动渲染 + 一键推送，7×24 全自动运行。</p>
+
+        <div class="flow-box">
+          <span class="flow-step">SQL 数据抽取</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Python 指标计算</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">FBI 图表截图</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">AI 分析生成</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">Jinja2 渲染</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">邮件自动推送</span>
+        </div>
+
+        <div class="ai-box">
+          <div class="ai-title">🤖 AI 参与亮点</div>
+          <ul>
+            <li><strong>Python 引擎：</strong>Codex 辅助编写 report_engine.py 全量代码（~200 行）</li>
+            <li><strong>分析洞察：</strong>指标数据输入 Prompt，AI 自动生成叙述性分析段落</li>
+            <li><strong>HTML 模板：</strong>Codex 生成 Jinja2 日报/周报双模板，邮件内嵌 + PDF 导出</li>
+          </ul>
+        </div>
+
+        <div class="tags">
+          <span class="tag">Python</span><span class="tag">Jinja2</span><span class="tag">Codex</span>
+          <span class="tag">SMTP</span><span class="tag">Crontab</span>
+          <span class="tag">HTML/CSS</span>
+          <span class="tag">FBI API</span>
+        </div>
+
+        <div class="files-mini">
+          <div class="file-chip">🐍 report_engine <span class="ext">PY</span></div>
+          <div class="file-chip">📝 daily_report <span class="ext">HTML</span></div>
+          <div class="file-chip">📝 weekly_report <span class="ext">HTML</span></div>
+          <div class="file-chip">⚙️ config <span class="ext">YAML</span></div>
+          <div class="file-chip">📊 日报样例 <span class="ext">HTML</span></div>
+          <div class="file-chip">📊 周报样例 <span class="ext">HTML</span></div>
+        </div>
+
+        <div class="effect-grid">
+          <div class="effect-card"><div class="val">2h → 15min</div><div class="lbl">单次报告制作时间</div></div>
+          <div class="effect-card"><div class="val">+90%</div><div class="lbl">效率提升</div></div>
+          <div class="effect-card"><div class="val">7×24</div><div class="lbl">全自动运行</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 3 -->
+    <div class="project-card" onclick="window.open('项目三-商家库存编辑审批自动化.html')">
+      <div class="card-header">
+        <div class="card-icon icon-green">🔗</div>
+        <div class="card-title">
+          <h2 style="color:var(--accent3);">项目三：商家活动库存编辑审批自动化</h2>
+          <span class="date">2025 · 大促期间日均处理 10+ 审批</span>
+        </div>
+      </div>
+      <div class="card-accent accent-green"></div>
+      <div class="card-body">
+        <p class="desc">基于宜搭低代码平台搭建三级审批流，根据库存变更量自动分级路由，审批通过后 API 自动回写库存系统。</p>
+
+        <div class="flow-box">
+          <span class="flow-step">商家提交申请</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">表单自动校验</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">规则引擎分级</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">L1/L2/L3 审批</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">API 自动回写</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">钉钉/企微通知</span>
+        </div>
+
+        <div class="ai-box">
+          <div class="ai-title">🤖 AI 参与亮点</div>
+          <ul>
+            <li><strong>表单 Schema：</strong>Codex 辅助生成宜搭兼容的 JSON Schema，含校验规则</li>
+            <li><strong>分级路由：</strong>Codex 编写宜搭 JS 扩展代码，实现三级自动路由</li>
+            <li><strong>回写脚本：</strong>Codex 辅助实现 HMAC 签名鉴权 + 重试 + 审计日志</li>
+          </ul>
+        </div>
+
+        <div class="tags">
+          <span class="tag">宜搭</span><span class="tag">Codex</span><span class="tag">低代码</span>
+          <span class="tag">REST API</span><span class="tag">HMAC</span>
+          <span class="tag">钉钉</span><span class="tag">企业微信</span>
+        </div>
+
+        <div class="files-mini">
+          <div class="file-chip">📋 form_schema <span class="ext">JSON</span></div>
+          <div class="file-chip">⚙️ approval_flow <span class="ext">JSON</span></div>
+          <div class="file-chip">🐍 inventory_callback <span class="ext">PY</span></div>
+          <div class="file-chip">🔔 通知模板 <span class="ext">MD</span></div>
+        </div>
+
+        <div class="effect-grid">
+          <div class="effect-card"><div class="val">4~8h → &lt;1h</div><div class="lbl">审批时效</div></div>
+          <div class="effect-card"><div class="val">100%</div><div class="lbl">审批留痕可追溯</div></div>
+          <div class="effect-card"><div class="val">0 遗漏</div><div class="lbl">人工审批遗漏风险</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Directory -->
+  <div class="section-head" style="margin-top:32px;">
+    <div class="dot" style="background:var(--accent1);"></div>
+    <h3>目录结构</h3>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;font-family:'SF Mono','Menlo','Monaco',monospace;font-size:12px;color:var(--text-muted);line-height:1.8;">
+    <span style="color:var(--accent1);">ai-workflow-projects/</span><br>
+    ├── <span style="color:var(--highlight);">总览.html</span> ← 你正在看<br>
+    ├── README.md<br>
+    │<br>
+    ├── <span style="color:var(--accent1);">project-1-sku-monitor/</span><br>
+    │   ├── README.md<br>
+    │   ├── <span style="color:#94a3b8;">sql/</span> (3 个 SQL 模板)<br>
+    │   ├── <span style="color:#94a3b8;">scripts/</span> (3 个 Python 脚本)<br>
+    │   ├── <span style="color:#94a3b8;">dashboard/</span> (FBI 看板配置)<br>
+    │   └── <span style="color:#94a3b8;">samples/</span> (预警消息样例)<br>
+    │<br>
+    ├── <span style="color:var(--accent2);">project-2-report-automation/</span><br>
+    │   ├── README.md<br>
+    │   ├── <span style="color:#94a3b8;">scripts/</span> (报告引擎)<br>
+    │   ├── <span style="color:#94a3b8;">templates/</span> (日报/周报 HTML 模板)<br>
+    │   ├── <span style="color:#94a3b8;">samples/</span> (产出样例 · 可直接浏览器打开)<br>
+    │   └── <span style="color:#94a3b8;">config/</span> (YAML 配置)<br>
+    │<br>
+    └── <span style="color:var(--accent3);">project-3-approval-flow/</span><br>
+        ├── README.md<br>
+        ├── <span style="color:#94a3b8;">yida/</span> (表单 Schema + 审批流配置)<br>
+        ├── <span style="color:#94a3b8;">scripts/</span> (API 回写脚本)<br>
+        └── <span style="color:#94a3b8;">samples/</span> (通知模板样例)
+  </div>
+
+  <div class="footer">
+    吴天琦 · 速卖通供应链运营 · AI 自动化工作流项目集<br>
+    所有代码文件均包含 AI 参与说明注释
+  </div>
+
+</div>
+</body>
+</html>
